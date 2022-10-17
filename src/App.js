@@ -1,24 +1,42 @@
-import logo from './logo.svg';
-import './App.css';
+import { useEffect } from "react";
+import { Routes, Route } from "react-router-dom";
+import DisplayNotes from "./Components/displayNotes";
+import Editable from "./Components/editableNote";
+import AddNew from "./Components/addNew";
+import "./App.css";
+import { useDispatch } from "react-redux";
+import { noteActions } from "./store/note_item";
+import { showActions } from "./store/show_items";
+import { pinnedActions } from "./store/pinned_items";
 
 function App() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (!localStorage.getItem("keepNotes")) {
+      localStorage.setItem("keepNotes", JSON.stringify([]));
+    }
+    if (!localStorage.getItem("pinnedNotes")) {
+      localStorage.setItem("pinnedNotes", JSON.stringify([]));
+    }
+  }, []);
+
+  useEffect(() => {
+    const getItems = JSON.parse(localStorage.getItem("keepNotes"));
+    const getPinnedItems = JSON.parse(localStorage.getItem("pinnedNotes"));
+    dispatch(noteActions.updateNote(getItems));
+    dispatch(showActions.setShowItems(getItems.slice(0, 6)));
+    dispatch(pinnedActions.updatePinnedItems(getPinnedItems));
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <Routes>
+        <Route path="/" element={<DisplayNotes />} />
+        <Route path="/details" element={<Editable />} />
+        <Route path="/add" element={<AddNew />} />
+      </Routes>
+    </>
   );
 }
 
